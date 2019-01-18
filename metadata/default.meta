@@ -1,0 +1,6 @@
+# Application-level permissions
+
+[]
+access = read : [ admin ], write : [ admin ]
+export = none
+owner = admin

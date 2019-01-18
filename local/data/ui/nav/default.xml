@@ -1,0 +1,5 @@
+<nav search_view="search" color="#0733B3">
+  <view name="welcome_page_to_api" default='true' />
+  <view name="my_first_dashboard" />
+  <view name="search" />
+</nav>

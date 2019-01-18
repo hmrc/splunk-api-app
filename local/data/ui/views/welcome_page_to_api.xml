@@ -1,0 +1,71 @@
+<dashboard stylesheet="splunk-libs-app:common.css,splunk-libs-app:hover.css,splunk-libs-app:lightblue_theme.css" hideEdit="True">
+  <label>Welcome to the API App App</label>
+
+  <row>
+    <panel id="panelinfo">
+      <title>Description</title>
+      <html>
+        <div style="margin-top:10px;margin-bottom:10px;font-size:16px;">
+          <p>This is the API app</p>
+        </div>
+      </html>
+    </panel>
+  </row>
+
+  <row>
+    <panel id="panelbug">
+      <title>Who is maintaining this app?</title>
+      <html>
+        <div style="margin-top:10px;margin-bottom:10px;font-size:16px;">
+          <p>Chris Prodger</p>
+          <a href="mailto:chris.prodger@digital.hmrc.gov.uk" class="tryitbtnxxl">chris.prodger@digital.hmrc.gov.uk</a>
+        </div>
+      </html>
+    </panel>
+  </row>
+
+  <row>
+    <panel id="panellock">
+      <title>Can I modify this app via the UI?</title>
+      <html>
+        <div style="margin-top:10px;margin-bottom:10px;font-size:16px;">
+          <p>The answer is NO. This app is currently maintain by the github. If you modify this app via the UI, for instance, by creating a new dashboard or report, the changes will be overwritten by the deployment of the next version of this app.</p>
+        </div>
+      </html>
+    </panel>
+  </row>
+
+  <row>
+    <panel id="panelidea">
+      <title>What should I do if I want to modify this app?</title>
+      <html>
+        <div style="margin-top:10px;margin-bottom:10px;font-size:16px;">
+          <p>Any change to this app is very welcome but needs to go through the DDCOPS team team. Please contact the team to share your improvements.</p>
+        </div>
+      </html>
+    </panel>
+  </row>
+
+  <row>
+    <panel id="panelcontact">
+      <title>Who should I contact for any question about this app?</title>
+      <html>
+        <div style="margin-top:10px;margin-bottom:10px;font-size:16px;">
+          <p>For any question about this app, please contact the Chris Prodger team</p>
+        </div>
+      </html>
+    </panel>
+  </row>
+
+  <row>
+    <panel id="paneldash">
+      <title>How do I view the dashboards</title>
+      <html>
+        <div style="margin-top:10px;margin-bottom:10px;font-size:16px;">
+          <p>Simply select the drop down menu under the heading "Dashboards" and select the dashboard you wish to view.</p>
+        </div>
+      </html>
+    </panel>
+
+  </row>
+</dashboard>
