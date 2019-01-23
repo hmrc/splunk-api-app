@@ -1,5 +1,4 @@
 <nav search_view="search" color="#80aaff">
   <view name="welcome_to_api" default='true' />
   <view name="api_data" />
-  <view name="search" />
 </nav>
