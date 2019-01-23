@@ -1,5 +1,5 @@
 <nav search_view="search" color="#80aaff">
-  <view name="Welcome_to_the_API_App" default='true' />
-  <view name="API Data" />
+  <view name="welcome_to_api" default='true' />
+  <view name="api_data" />
   <view name="search" />
 </nav>
