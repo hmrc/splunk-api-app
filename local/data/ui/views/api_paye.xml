@@ -1,0 +1,68 @@
+<form>
+  <label>API PAYE</label>
+  <fieldset submitButton="false">
+    <input type="text" token="nino">
+      <label>Please enter the NINO</label>
+    </input>
+    <input type="time" token="timepicker" searchWhenChanged="true">
+      <label>Please select the time range</label>
+      <default>
+        <earliest>-7d@h</earliest>
+        <latest>now</latest>
+      </default>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <table>
+        <title>PAYE Full Data</title>
+        <search>
+          <query>`individuals-paye_wmf(RequestReceived)` detail.method=GET detail.statusCode=200 auditType=RequestReceived auditSource=individuals-paye
+| rex field="tags.path" "\/nino\/(?&lt;Nino&gt;[^\s]+)\/t"
+| rex field="tags.transactionName" "tax-year\/(?&lt;year&gt;[^\s]+)"
+| spath output=PayRef input=detail.responseMessage path=employments{}.employer.payeReference
+| spath output=PayRID input=detail.responseMessage path=employments{}.payrollId
+| spath output=SDate input=detail.responseMessage path=employments{}.startDate
+| spath output=EDate input=detail.responseMessage path=employments{}.endDate
+| spath output=TIncome input=detail.responseMessage path=employments{}.taxableIncome
+| spath output=TDeducted input=detail.responseMessage path=employments{}.incomeTaxDeducted
+| search Nino="$nino$"
+| stats values(Nino) as Nino values(PayRef) as PayRef values(PayRID) as PAYRID values(SDate) as SDate values(EDate) as EDate values(TIncome) as TIncome values(TDeducted) as TDeducted values(year) as year values(detail.responseMessage) as Message by _time
+</query>
+          <earliest>$timepicker.earliest$</earliest>
+          <latest>$timepicker.latest$</latest>
+        </search>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <table>
+        <title>Tax History Outbound Call</title>
+        <search>
+          <query>`tax-history_wmf(OutboundCall)` request.detail.path="*/nps-hod-service/services/nps*"
+| rex field=request.tags.path "\/person\/(?&lt;Nino&gt;[^\W]+)\/"
+| search Nino="$nino$"
+| table response.detail.responseMessage</query>
+          <earliest>$timepicker.earliest$</earliest>
+          <latest>$timepicker.latest$</latest>
+        </search>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <table>
+        <title>Tax History Request Received</title>
+        <search>
+          <query>`tax-history_wmf(RequestReceived)`
+| rex field="tags.path" "\/tax-history\/(?&lt;Nino&gt;[^\W]+)\/"
+| search Nino="$nino$"
+| table detail.responseMessage _time</query>
+          <earliest>$timepicker.earliest$</earliest>
+          <latest>$timepicker.latest$</latest>
+        </search>
+      </table>
+    </panel>
+  </row>
+</form>
