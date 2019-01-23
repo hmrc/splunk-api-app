@@ -1,5 +1,5 @@
 <dashboard stylesheet="splunk-libs-app:common.css,splunk-libs-app:hover.css,splunk-libs-app:lightblue_theme.css" hideEdit="True">
-  <label>Welcome to the API App App</label>
+  <label>Welcome to the API App</label>
 
   <row>
     <panel id="panelinfo">
