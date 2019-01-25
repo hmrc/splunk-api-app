@@ -2,7 +2,7 @@
   <label>API PAYE</label>
   <fieldset submitButton="false">
     <input type="text" token="nino">
-      <label>Please enter the NINO</label>
+      <label>Please enter the NINO exc. the suffix</label>
     </input>
     <input type="time" token="timepicker" searchWhenChanged="true">
       <label>Please select the time range</label>
@@ -18,7 +18,7 @@
         <title>PAYE Full Data</title>
         <search>
           <query>`individuals-paye_wmf(RequestReceived)` detail.method=GET detail.statusCode=200 auditType=RequestReceived auditSource=individuals-paye
-| rex field="tags.path" "\/nino\/(?&lt;Nino&gt;[^\s]+)\/t"
+| rex field="tags.path" "\/nino\/(?&lt;nino&gt;[^\s]{8})"
 | rex field="tags.transactionName" "tax-year\/(?&lt;year&gt;[^\s]+)"
 | spath output=PayRef input=detail.responseMessage path=employments{}.employer.payeReference
 | spath output=PayRID input=detail.responseMessage path=employments{}.payrollId
@@ -26,7 +26,7 @@
 | spath output=EDate input=detail.responseMessage path=employments{}.endDate
 | spath output=TIncome input=detail.responseMessage path=employments{}.taxableIncome
 | spath output=TDeducted input=detail.responseMessage path=employments{}.incomeTaxDeducted
-| search Nino="$nino$"
+| search nino="$nino$"
 | stats values(Nino) as Nino values(PayRef) as PayRef values(PayRID) as PAYRID values(SDate) as SDate values(EDate) as EDate values(TIncome) as TIncome values(TDeducted) as TDeducted values(year) as year values(detail.responseMessage) as Message by _time
 </query>
           <earliest>$timepicker.earliest$</earliest>
@@ -38,12 +38,42 @@
   <row>
     <panel>
       <table>
-        <title>Tax History Outbound Call</title>
+        <title>Tax History Outbound Call IABDS</title>
+        <search>
+          <query>`tax-history_wmf(OutboundCall)` request.detail.path="*/iabds*"
+| spath output=nino input=response.detail.responseMessage path={}.nino
+| search nino="$nino$"
+| table _time auditSource auditType response.detail.responseMessage</query>
+          <earliest>$timepicker.earliest$</earliest>
+          <latest>$timepicker.latest$</latest>
+        </search>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <table>
+        <title>Tax History Outbound Call NPS</title>
         <search>
           <query>`tax-history_wmf(OutboundCall)` request.detail.path="*/nps-hod-service/services/nps*"
-| rex field=request.tags.path "\/person\/(?&lt;Nino&gt;[^\W]+)\/"
-| search Nino="$nino$"
-| table response.detail.responseMessage</query>
+| spath output=nino input=response.detail.responseMessage path={}.nino
+| search nino="$nino$"
+| table _time auditSource auditType response.detail.responseMessage</query>
+          <earliest>$timepicker.earliest$</earliest>
+          <latest>$timepicker.latest$</latest>
+        </search>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <table>
+        <title>Tax History Outbound Call Tax Account</title>
+        <search>
+          <query>`tax-history_wmf(OutboundCall)` request.detail.path="*/tax-account*"
+| rex field="request.detail.path" "\/individuals\/(?&lt;nino&gt;[^\s]{8})"
+| search nino="$nino$"
+| table _time auditSource auditType response.detail.responseMessage</query>
           <earliest>$timepicker.earliest$</earliest>
           <latest>$timepicker.latest$</latest>
         </search>
@@ -55,10 +85,10 @@
       <table>
         <title>Tax History Request Received</title>
         <search>
-          <query>`tax-history_wmf(RequestReceived)`
-| rex field="tags.path" "\/tax-history\/(?&lt;Nino&gt;[^\W]+)\/"
-| search Nino="$nino$"
-| table detail.responseMessage _time</query>
+          <query>`tax-history_wmf(RequestReceived)` detail.statusCode=200
+| rex field="tags.path" "\/tax-history\/(?&lt;nino&gt;[^\s]{8})"
+| search nino="$nino$"
+| table _time auditSource auditType detail.responseMessage _time</query>
           <earliest>$timepicker.earliest$</earliest>
           <latest>$timepicker.latest$</latest>
         </search>
