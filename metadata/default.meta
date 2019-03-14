@@ -4,3 +4,6 @@
 access = read : [ admin, api_role ], write : [ admin, api_role ]
 export = none
 owner = admin
+
+[views/api_stats]
+access = read : [ api_stats_role, admin ], write : [ admin ]

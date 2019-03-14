@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="UTF-8"?><form>
+  <label>API Stats</label>
+  <fieldset submitButton="false">
+    <input type="time" token="timerange">
+      <label>Please Select the Timerange</label>
+      <default>
+        <earliest>-24h@h</earliest>
+        <latest>now</latest>
+      </default>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <title>Combined All Calls With Status Codes</title>
+      <table>
+        <search>
+          <query>`wso2_wmf(APIGatewayRequestCompleted)`request.detail.apiContext="*vat"
+| fields eventId request.detail.applicationProductionClientId response.detail.statusCode
+| dedup eventId
+| rename  request.detail.applicationProductionClientId AS ClientID response.detail.statusCode AS statusCode
+| lookup consumercalls.csv ClientID OUTPUT Developer
+| chart count BY ClientID statusCode 
+| addtotals fieldname="All" 
+| eval Successful = 0 
+| foreach 1* 2* 300 301 302 303 
+     [ eval Successful = Successful + coalesce('&lt;&lt;FIELD&gt;&gt;', 0) ] 
+| eval Unsuccessful = All - Successful
+| table ClientID All Successful Unsuccessful *</query>
+          <earliest>$timerange.earliest$</earliest>
+          <latest>$timerange.latest$</latest>
+        </search>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>All End Points</title>
+      <table>
+        <search>
+          <query>`wso2_wmf(APIGatewayRequestCompleted)`request.detail.apiContext=*vat "request.detail.method"=GET OR "request.detail.method"=POST request.tags.path="*vat/*/payments*" OR request.tags.path="*vat/*/obligations*" OR request.tags.path="*vat/*/liabilities*" OR request.tags.path="*vat/*/returns/*" OR request.tags.path="*vat/*/returns"
+| fields request.detail.apiContext eventId date_mday request.tags.path request.detail.applicationProductionClientId
+| replace "organisations/*" with * in request.detail.apiContext
+| dedup eventId date_mday
+| eval end_obligations=case('request.tags.path' like "%obligations%", 1), end_liabilities=case('request.tags.path' like "%liabilities%", 1), end_payments=case('request.tags.path' like "%payments%", 1), end_retrieve=case('request.tags.path' like "%returns/%", 1), end_submit=case('request.tags.path' like "%returns", 1)
+| rename request.detail.applicationProductionClientId AS ClientID
+| fillnull value=0
+| eval newtime=strftime(_time,"%B")
+| eval month=strftime(_time,"%m")
+| lookup consumercalls.csv ClientID OUTPUT Developer
+| stats sum(end_obligations) AS obligations sum(end_liabilities) AS liabilities sum(end_payments) AS payments sum(end_retrieve) AS retrieve sum(end_submit) AS submit BY newtime month ClientID
+| eval newtime = newtime . " Total"
+| sort month
+| streamstats dc(newtime) AS _serial
+| multireport
+[ rename newtime AS _newtime ]
+[ stats sum(*) AS * first(_serial) AS _serial BY newtime
+| rename newtime AS _newtime
+`comment("This adds the "Totals" text to the Developer field")`
+| eval ClientID = _newtime ]
+| sort 0 BY _serial
+| fields - newtime month</query>
+          <earliest>$timerange.earliest$</earliest>
+          <latest>$timerange.latest$</latest>
+        </search>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Date of First &amp; Last Call</title>
+      <table>
+        <search>
+          <query>`wso2_wmf(APIGatewayRequestCompleted)` "request.detail.apiContext"=*vat
+| fields request.detail.apiContext request.detail.applicationProductionClientId eventId
+| replace "organisations/*" with * in request.detail.apiContext
+| rename request.detail.applicationProductionClientId AS ClientID
+| dedup eventId ClientID
+| lookup consumercalls.csv ClientID OUTPUT Developer
+| fillnull value=0
+| eval fcall=strftime(_time,"%Y-%m-%d %H:%M:%S")
+| eval lcall=strftime(_time,"%Y-%m-%d %H:%M:%S")
+| stats earliest(fcall) AS "First Call" latest(lcall) AS "Last Call" BY ClientID</query>
+          <earliest>$timerange.earliest$</earliest>
+          <latest>$timerange.latest$</latest>
+        </search>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Status Codes By...</title>
+      <table>
+        <search>
+          <query>`wso2_wmf(APIGatewayRequestCompleted)`request.detail.apiContext=*vat "request.detail.method"=GET request.tags.path="*vat/*/payments*" OR request.tags.path="*vat/*/obligations*" OR request.tags.path="*vat/*/liabilities*"
+| fields request.tags.path response.detail.statusCode
+| eval pathvalue=if(like('request.tags.path', "%payments%"), "Payments", if(like('request.tags.path', "%obligations%"), "Obligations",  if(like('request.tags.path', "%liabilities%"), "Liabilities", "")))
+| rename response.detail.statusCode AS "Status Code"
+| chart count BY pathvalue "Status Code"
+| addtotals fieldname="All"</query>
+          <earliest>$timerange.earliest$</earliest>
+          <latest>$timerange.latest$</latest>
+        </search>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>VAT 403</title>
+      <table>
+        <search>
+          <query>| multisearch
+[ search `wso2_wmf(APIGatewayRequestCompleted)`request.detail.apiContext=*vat response.detail.statusCode=403]
+[ search `vat-api_wmf(RequestReceived)` detail.statusCode=403]
+| eval RequestID=coalesce('request.tags.X-Request-ID','tags.X-Request-ID')
+| eval StatusCode=coalesce('detail.statusCode','response.detail.statusCode')
+| rename request.detail.applicationProductionClientId AS ClientID
+| lookup consumercalls.csv ClientID OUTPUT Developer
+| dedup eventId
+| bucket span=1m _time
+| stats values(ClientID) AS ClientID values(detail.responseMessage) AS Response BY RequestID _time
+| stats count BY Response</query>
+          <earliest>$timerange.earliest$</earliest>
+          <latest>$timerange.latest$</latest>
+        </search>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>VAT 429</title>
+      <table>
+        <search>
+          <query>`wso2_wmf(APIGatewayRequestFailedDueToApplicationSpecificRateLimit)` detail.apiContext=*vat
+| fields detail.apiContext eventId detail.applicationProductionClientId
+| replace "organisations/*" with * in detail.apiContext
+| dedup eventId
+| rename detail.applicationProductionClientId AS ClientID
+| lookup consumercalls.csv ClientID OUTPUT Developer
+| fillnull value=0
+| stats count AS All BY ClientID</query>
+          <earliest>$timerange.earliest$</earliest>
+          <latest>$timerange.latest$</latest>
+        </search>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>VAT Headers</title>
+      <table>
+        <search>
+          <query>| multisearch
+[ search `api-gateway_wmf(APIClientRequest)` path=*vat*]
+[ search `wso2_wmf(APIGatewayRequestCompleted)` "request.detail.apiContext"=*vat]
+| eval RequestID=coalesce('request.tags.X-Request-ID','requestID')
+| rename request.detail.applicationProductionClientId as ClientID 
+| lookup consumercalls.csv ClientID OUTPUT Developer
+| eval header=""
+| foreach clientHeaders.gov* [eval header=header+gov&lt;&lt;MATCHSTR&gt;&gt;]
+| bucket span=10s _time
+| chart values(Developer) as Developer sum(clientHeaders.gov*) as clientHeaders.gov* by RequestID
+| fields - RequestID</query>
+          <earliest>$timerange.earliest$</earliest>
+          <latest>$timerange.latest$</latest>
+        </search>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Submissions</title>
+      <table>
+        <search>
+          <query>| multisearch
+[ search `vat-api_wmf(submitVatReturn)`
+| rex field=tags.path "\/(?&lt;submitVatReg&gt;[^\/]*)" ]
+[ search `vat-api_wmf(retrieveVatObligations)`
+| rex field=tags.path "\/(?&lt;retrieveVatRegO&gt;[^\/]*)" ]
+[ search `vat-api_wmf(retrieveVatLiabilities)`
+| rex field=tags.path "\/(?&lt;retrieveVatRegL&gt;[^\/]*)" ]
+[ search `vat-api_wmf(retrieveVatPayments)`
+| rex field=tags.path "\/(?&lt;retrieveVatPay&gt;[^\/]*)" ]
+[ search `vat-api_wmf(retrieveVatReturns)`
+| rex field=tags.path "\/(?&lt;retrieveVatReturns&gt;[^\/]*)" ]
+[ search `wso2_wmf(APIGatewayRequestCompleted)`request.detail.apiContext=*vat "request.detail.method"=POST request.tags.path="*vat/*/returns"
+| replace "organisations/*" with * in request.detail.apiContext
+| rex field=request.tags.path "\/1.0/organisations/vat/(?&lt;SVRVatRegNo1&gt;[^\/]*)" ]
+[ search `wso2_wmf(APIGatewayRequestCompleted)`request.detail.apiContext=*vat "request.detail.method"=GET request.tags.path="*vat/*/obligations*"
+| replace "organisations/*" with * in request.detail.apiContext
+| rex field=request.tags.path "\/1.0/organisations/vat/(?&lt;RVOVatRegNo1&gt;[^\/]*)" ]
+[ search `wso2_wmf(APIGatewayRequestCompleted)`request.detail.apiContext=*vat "request.detail.method"=GET request.tags.path="*vat/*/liabilities*"
+| replace "organisations/*" with * in request.detail.apiContext
+| rex field=request.tags.path "\/1.0/organisations/vat/(?&lt;RVLVatRegNo1&gt;[^\/]*)" ]
+[ search `wso2_wmf(APIGatewayRequestCompleted)` request.detail.apiContext=*vat "request.detail.method"=GET request.tags.path="*vat/*/payments*"
+| replace "organisations/*" with * in request.detail.apiContext
+| rex field=request.tags.path "\/1.0/organisations/vat/(?&lt;RVPVatRegNo1&gt;[^\/]*)" ]
+[ search `wso2_wmf(APIGatewayRequestCompleted)` request.detail.apiContext=*vat "request.detail.method"=GET request.tags.path="*vat/*/returns*"
+| fields  request.detail.apiContext request.detail.applicationProductionClientId tags.transactionName
+| replace "organisations/*" with * in request.detail.apiContext
+| rex field=request.tags.path "\/1.0/organisations/vat/(?&lt;RVRVatRegNo1&gt;[^\/]*)" ]
+| rename request.detail.applicationProductionClientId AS ClientID
+| lookup consumercalls.csv ClientID OUTPUT Developer
+| bucket span=2s _time
+| eval NewVRN1=coalesce('SVRVatRegNo1', 'submitVatReg')
+| eval NewVRN2=coalesce('RVOVatRegNo1', 'retrieveVatRegO')
+| eval NewVRN3=coalesce('RVLVatRegNo1', 'retrieveVatRegL')
+| eval NewVRN4=coalesce('RVPVatRegNo1', 'retrieveVatPay')
+| eval NewVRN5=coalesce('RVRVatRegNo1', 'retrieveVatReturns')
+| eval CombinedVRN=coalesce('NewVRN1', 'NewVRN2', 'NewVRN3', 'NewVRN4', 'NewVRN5')
+| stats values(ClientID) AS ClientID values(Developer) AS Developer values(tags.transactionName) AS Action BY CombinedVRN _time
+| where isnotnull(Action)
+| fields - CombinedVRN
+| chart count BY ClientID Action</query>
+          <earliest>$timerange.earliest$</earliest>
+          <latest>$timerange.latest$</latest>
+        </search>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Date of First Submission</title>
+      <table>
+        <search>
+          <query>| multisearch
+[ search `vat-api_wmf(submitVatReturn)`
+| rex field=tags.path "\/(?&lt;VatRegNo2&gt;[^\/]*)" ]
+[ search `wso2_wmf(APIGatewayRequestCompleted)`request.detail.apiContext=*vat "request.detail.method"=POST request.tags.path="*vat/*/returns"
+| fields request.detail.apiContext request.tags.path tags.transactionName request.detail.applicationProductionClientId
+| replace "organisations/*" WITH * IN request.detail.apiContext 
+| rex field=request.tags.path "\/1.0/organisations/vat/(?&lt;VatRegNo1&gt;[^\/]*)" ]
+| rename tags.transactionName AS Action request.detail.applicationProductionClientId AS ClientID
+| bucket span=2s _time
+| eval NewVRN=coalesce('VatRegNo1','VatRegNo2')
+| eval fsub=strftime(_time,"%Y-%m-%d %H:%M:%S")
+| stats earliest(fsub) AS "First Submission" BY ClientID</query>
+          <earliest>$timerange.earliest$</earliest>
+          <latest>$timerange.latest$</latest>
+        </search>
+      </table>
+    </panel>
+  </row>
+</form>
