@@ -1,7 +1,7 @@
 # Application-level permissions
 
 []
-access = read : [ admin, api_role ], write : [ admin, api_role ]
+access = read : [ admin, api_role, api_stats_role ], write : [ admin, api_role ]
 export = none
 owner = admin
 
