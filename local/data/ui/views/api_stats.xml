@@ -55,7 +55,6 @@
 [ rename newtime AS _newtime ]
 [ stats sum(*) AS * first(_serial) AS _serial BY newtime
 | rename newtime AS _newtime
-`comment("This adds the "Totals" text to the Developer field")`
 | eval ClientID = _newtime ]
 | sort 0 BY _serial
 | fields - newtime month</query>
