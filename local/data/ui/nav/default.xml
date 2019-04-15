@@ -2,4 +2,5 @@
   <view name="welcome_to_api" default='true' />
   <view name="api_paye" />
   <view name="api_stats" />
+  <view name="rti_stats" />
 </nav>

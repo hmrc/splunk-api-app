@@ -10,3 +10,6 @@ access = read : [ api_stats_role, admin ], write : [ admin ]
 
 [views/api_paye]
 access = read : [ api_role, admin ], write : [ admin ]
+
+[views/rti_stats]
+access = read : [ api_stats_role, admin ], write : [ admin ]
