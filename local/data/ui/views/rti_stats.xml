@@ -15,7 +15,7 @@
       <table>
         <search>
           <query>`real-time-income-information_wmf(ServiceRequestReceived)` 
-| rex field=detail.filterFields "\((<Fields>.*)\)" 
+| rex field=detail.filterFields "\((?&lt;Fields&gt;.*)\)"
 | makemv Fields 
 | makemv delim="," Fields 
 | mvexpand Fields 
