@@ -1,21 +1,21 @@
-<?xml version="1.0" encoding="UTF-8"?><form>
+<form>
   <label>RTI Stats</label>
   <fieldset submitButton="false">
-    <input type="time" token="timerange">
-      <label>Please Select the Timerange</label>
+    <input type="time" token="field1">
+      <label></label>
       <default>
-        <earliest>-24h@h</earliest>
-        <latest>now</latest>
+        <earliest>0</earliest>
+        <latest></latest>
       </default>
     </input>
   </fieldset>
   <row>
     <panel>
-      <title>Real Time Information - Allowable Fields</title>
+    	<title>Real Time Information - Allowable Fields'</title>
       <table>
         <search>
           <query>`real-time-income-information_wmf(ServiceRequestReceived)` 
-| rex field=detail.filterFields "\((?<Fields>.*)\)" 
+| rex field=detail.filterFields "\((?&lt;Fields&gt;.*)\)" 
 | makemv Fields 
 | makemv delim="," Fields 
 | mvexpand Fields 
@@ -26,8 +26,8 @@
 | eval "Error Rate"=round(100*'Errors Per Submission'/'All Fields',1)
 | table _time "All Fields" "Errors Per Submission" "Error Rate" "Submitted Fields" "Error Rate"
 | fieldformat "Error Rate"=tostring('Error Rate')+"%"</query>
-          <earliest>$timerange.earliest$</earliest>
-          <latest>$timerange.latest$</latest>
+          <earliest>0</earliest>
+          <latest></latest>
         </search>
       </table>
     </panel>
