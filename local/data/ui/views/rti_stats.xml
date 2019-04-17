@@ -11,11 +11,11 @@
   </fieldset>
   <row>
     <panel>
-    	<title>Real Time Information - Allowable Fields'</title>
+    	<title>Real Time Information - Allowable Fields</title>
       <table>
         <search>
           <query>`real-time-income-information_wmf(ServiceRequestReceived)` 
-| rex field=detail.filterFields "\((?&lt;Fields&gt;.*)\)" 
+| rex field=detail.filterFields "\((<Fields>.*)\)" 
 | makemv Fields 
 | makemv delim="," Fields 
 | mvexpand Fields 
