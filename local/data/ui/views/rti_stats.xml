@@ -1,17 +1,18 @@
+
 <form>
-  <label>RTI Stats</label>
-  <fieldset submitButton="false">
-    <input type="time" token="field1">
-      <label></label>
+  <label>RTI Metrics</label>
+  <fieldset submitButton="true" autoRun="false">
+    <input type="time" token="tPicker_Main" searchWhenChanged="false">
+      <label>Choose Date Range</label>
       <default>
-        <earliest>0</earliest>
-        <latest></latest>
+        <earliest>-7d@d</earliest>
+        <latest>now</latest>
       </default>
     </input>
   </fieldset>
   <row>
     <panel>
-    	<title>Real Time Information - Allowable Fields</title>
+      <title>RTI Transactions - Allowable Fields</title>
       <table>
         <search>
           <query>`real-time-income-information_wmf(ServiceRequestReceived)` 
@@ -26,9 +27,10 @@
 | eval "Error Rate"=round(100*'Errors Per Submission'/'All Fields',1)
 | table _time "All Fields" "Errors Per Submission" "Error Rate" "Submitted Fields" "Error Rate"
 | fieldformat "Error Rate"=tostring('Error Rate')+"%"</query>
-          <earliest>0</earliest>
-          <latest></latest>
+          <earliest>$tPicker_Main.earliest$</earliest>
+          <latest>$tPicker_Main.latest$</latest>
         </search>
+        <option name="drilldown">none</option>
       </table>
     </panel>
   </row>
