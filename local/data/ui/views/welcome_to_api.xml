@@ -17,8 +17,8 @@
       <title>Who is maintaining this app?</title>
       <html>
         <div style="margin-top:10px;margin-bottom:10px;font-size:16px;">
-          <p>Chris Prodger</p>
-          <a href="mailto:chris.prodger@digital.hmrc.gov.uk" class="tryitbtnxxl">chris.prodger@digital.hmrc.gov.uk</a>
+          <p>Stephen Benn and Steve Haley</p>
+          <a href="mailto:stephen.benn@digital.hmrc.gov.uk" class="tryitbtnxxl">stephen.benn@digital.hmrc.gov.uk</a>
         </div>
       </html>
     </panel>
@@ -29,7 +29,7 @@
       <title>Can I modify this app via the UI?</title>
       <html>
         <div style="margin-top:10px;margin-bottom:10px;font-size:16px;">
-          <p>The answer is NO. This app is currently maintain by the github. If you modify this app via the UI, for instance, by creating a new dashboard or report, the changes will be overwritten by the deployment of the next version of this app.</p>
+          <p>NO. This app is maintained via Github and you MUST NOT try and modify it via the UI</p>
         </div>
       </html>
     </panel>
@@ -40,7 +40,7 @@
       <title>What should I do if I want to modify this app?</title>
       <html>
         <div style="margin-top:10px;margin-bottom:10px;font-size:16px;">
-          <p>Any change to this app is very welcome but needs to go through the DDCOPS team team. Please contact the team to share your improvements.</p>
+          <p>Changes to this app are welcome but need to be done via the DDCOPs team</p>
         </div>
       </html>
     </panel>
@@ -51,7 +51,7 @@
       <title>Who should I contact for any question about this app?</title>
       <html>
         <div style="margin-top:10px;margin-bottom:10px;font-size:16px;">
-          <p>For any question about this app, please contact the Chris Prodger team</p>
+          <p>Any questions about this app should be directed to the app maintainer</p>
         </div>
       </html>
     </panel>
@@ -62,7 +62,7 @@
       <title>How do I view the dashboards</title>
       <html>
         <div style="margin-top:10px;margin-bottom:10px;font-size:16px;">
-          <p>Simply select the drop down menu under the heading "Dashboards" and select the dashboard you wish to view.</p>
+          <p>By selecting the drop down menu under the Dashboards heading and choosing the dashboard you want to view</p>
         </div>
       </html>
     </panel>
