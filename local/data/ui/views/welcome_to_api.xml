@@ -17,7 +17,7 @@
       <title>Who is maintaining this app?</title>
       <html>
         <div style="margin-top:10px;margin-bottom:10px;font-size:16px;">
-          <p>Stephen Benn and Steve Haley</p>
+          <p>Stephen Benn</p>
           <a href="mailto:stephen.benn@digital.hmrc.gov.uk" class="tryitbtnxxl">stephen.benn@digital.hmrc.gov.uk</a>
         </div>
       </html>
@@ -40,7 +40,7 @@
       <title>What should I do if I want to modify this app?</title>
       <html>
         <div style="margin-top:10px;margin-bottom:10px;font-size:16px;">
-          <p>Changes to this app are welcome but need to be done via the DDCOPs team</p>
+          <p>Changes to this app are welcome but need to be done via the CIPSAGA team</p>
         </div>
       </html>
     </panel>
